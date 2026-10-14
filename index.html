@@ -1607,7 +1607,7 @@ var cloud = (CFG.tg && TG && TG.CloudStorage && typeof TG.CloudStorage.getItems 
 var storageName = cloud ? "облако Telegram" : "память этого устройства";
 
 function emptyCore(){
-  return {v:1, lv:0, owned:[], form:"4-3-3", xi:{}, plays:0, me:null,
+  return {v:1, lv:0, owned:[], form:"4-3-3", xi:{}, plays:0, me:null, rs:0,
           agg:{items:0, first:0, tasks:0, ok:0, hint:0, shown:0}, hard:{}};
 }
 var CORE = emptyCore(), SEEN = [], HIST = [];
@@ -1679,7 +1679,8 @@ function loadState(done){
       if(!err && vals && vals[K_CORE]){
         try{
           var cc = normCore(JSON.parse(vals[K_CORE]));
-          if(score(cc) > score(CORE) || (!CORE.me && cc.me)){ CORE = cc; took = true; }
+          /* rs — момент полного сброса: если в облаке сброс новее, старые данные устройства не воскрешаем */
+          if((cc.rs || 0) > (CORE.rs || 0) || score(cc) > score(CORE) || (!CORE.me && cc.me)){ CORE = cc; took = true; }
         }catch(e){}
       }
       /* история: берём облачную, если прогресс пришёл из облака или в ней больше записей */
@@ -1971,6 +1972,8 @@ function showCard(c){
 function renderMeForm(edit){
   document.onkeydown = null;
   var d = CORE.me ? JSON.parse(JSON.stringify(CORE.me)) : {n:"Иван", pos:"", club:"", nat:"Россия", flag:"🇷🇺"};
+  /* новая карточка начинается без фото: старое могло остаться на устройстве после «Стереть всё» */
+  if(!CORE.me) delete PHOTOS.me;
   var photo = PHOTOS.me || null, other = d.club && ME_CLUBS.indexOf(d.club) < 0;
   function draw(){
     var h = '<main class="wrap meform"><h2>Моя карточка</h2>'+
@@ -2033,7 +2036,7 @@ function renderMeForm(edit){
       if(first && CORE.owned.indexOf("me") < 0) CORE.owned.unshift("me");
       saveState();
       function go(){ if(first) renderPack(CARD_BY.me, -1); else renderHome(); }
-      if(photo) putPhoto("me", photo, go); else go();
+      if(photo) putPhoto("me", photo, go); else if(first) putPhoto("me", null, go); else go();
     };
   }
   draw();
@@ -2389,7 +2392,11 @@ function renderParent(){
        'по свободным лицензиям (CC BY, CC BY-SA, CC0, общественное достояние), обрезаны и очищены от фона.</p>';
   h += '<div class="pbtns"><button class="pbtn" id="editMe">Изменить карточку '+esc(CORE.me ? CORE.me.n : "")+'</button>'+
        '<button class="pbtn" id="copyData">Скопировать данные</button>'+
-       '<button class="pbtn" id="resetAll">Начать заново</button></div>';
+       '<button class="pbtn" id="resetAll">Начать заново</button>'+
+       '<button class="pbtn" id="wipeAll">Стереть всё</button></div>'+
+       '<p class="psync" style="border:0;margin-top:8px;padding-top:0">«Начать заново» стирает уровни и карточки, '+
+       'но оставляет карточку '+esc(CORE.me ? CORE.me.n : "ребёнка")+'. «Стереть всё» удаляет и её вместе с фото — '+
+       'приложение откроется как в первый раз.</p>';
   h += '<p class="psync">Прогресс хранится в '+esc(storageName)+'. Ограничения на число уровней в день нет: '+
        'за каждый новый уровень — одна карточка, переигрывать пройденные можно сколько угодно.<br><br>'+
        'Код входа: 1107, долгое нажатие на заголовок.</p></div>';
@@ -2422,6 +2429,13 @@ function renderParent(){
     CORE = emptyCore(); CORE.me = me; if(me) CORE.owned = ["me"]; syncMe();
     SEEN = []; HIST = []; saveState();
     document.body.removeChild(d); tab = "levels"; renderHome();
+  };
+  var armed2 = false;
+  document.getElementById("wipeAll").onclick = function(){
+    if(!armed2){ armed2 = true; this.textContent = "Стереть всё, включая карточку и фото? Нажми ещё раз"; return; }
+    CORE = emptyCore(); CORE.rs = Date.now(); syncMe();
+    SEEN = []; HIST = []; saveState();
+    putPhoto("me", null, function(){ document.body.removeChild(d); tab = "levels"; renderHome(); });
   };
 }
 
