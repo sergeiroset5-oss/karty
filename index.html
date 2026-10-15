@@ -6,7 +6,7 @@
 <title>Карточки Ивана</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap" media="print" onload="this.media='all'">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 :root{
@@ -385,76 +385,82 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
   .picker .opt .oh{font-size:16px}
 }
 /* тёмная тема — единственная, как у стадиона */
-:root{color-scheme:dark}
+:root{color-scheme:dark;--card:"Barlow Semi Condensed","Arial Narrow",ui-sans-serif,system-ui,sans-serif}
 /* ============================================================
    «Карточки» — коллекция игроков за уровни
    ============================================================ */
 
-/* ---------- карточка в раскладке EA FC 24–26 ----------
-   Слева сверху рейтинг и позиция, фото крупно, имя, шесть характеристик в ряд,
-   внизу флаг и клуб. Координаты — в процентах карточки, em — только размер шрифта;
-   размер всей карточки задаёт одна переменная --w. */
+/* ---------- карточка в раскладке EA FC 27 ----------
+   Щит с вогнутыми «плечами» и мягким дном (маска), металлический фон с диагональными
+   бликами и нижней панелью — свои, не EA. Рейтинг и позиция слева сверху, фото по центру,
+   имя строчными, шесть характеристик в ряд (подпись над числом), внизу флаг и клуб.
+   Координаты — проценты карточки, em — только размер шрифта; размер задаёт --w. */
 .fut{
-  --w:230px; --c1:#F6E27A; --c2:#D9A520; --c3:#9C6F0E; --ink:#3A2A06; --ink2:rgba(58,42,6,.72);
-  position:relative;width:var(--w);aspect-ratio:23/33;font-size:calc(var(--w) / 23);
-  clip-path:polygon(11% 0,89% 0,100% 4.5%,100% 87%,50% 100%,0 87%,0 4.5%);
+  --w:230px; --c1:#FBEFB0; --c2:#E7C863; --c3:#C99B2E; --ink:#3B2A08; --ink2:rgba(59,42,8,.62); --rim:rgba(255,248,214,.85);
+  position:relative;width:var(--w);aspect-ratio:200/278;font-size:calc(var(--w) / 20);
+  -webkit-mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20200%20278%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20d%3D%22M34%205%20Q100%200%20166%205%20C170%2016%20182%2025%20196%2027%20L196%20228%20C196%20241%20186%20248%20172%20251%20C146%20256%20116%20261%20100%20274%20C84%20261%2054%20256%2028%20251%20C14%20248%204%20241%204%20228%20L4%2027%20C18%2025%2030%2016%2034%205%20Z%22%20fill%3D%22%23000%22/%3E%3C/svg%3E") center/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20200%20278%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20d%3D%22M34%205%20Q100%200%20166%205%20C170%2016%20182%2025%20196%2027%20L196%20228%20C196%20241%20186%20248%20172%20251%20C146%20256%20116%20261%20100%20274%20C84%20261%2054%20256%2028%20251%20C14%20248%204%20241%204%20228%20L4%2027%20C18%2025%2030%2016%2034%205%20Z%22%20fill%3D%22%23000%22/%3E%3C/svg%3E") center/100% 100% no-repeat;
   background:
-    radial-gradient(120% 70% at 70% 15%, rgba(255,255,255,.55), transparent 55%),
-    linear-gradient(165deg,var(--c1) 0%,var(--c2) 50%,var(--c3) 100%);
-  color:var(--ink);font-family:var(--disp);flex:none;
+    linear-gradient(180deg,transparent 59.5%,rgba(255,255,255,.35) 59.5%,rgba(255,255,255,.35) 60%,rgba(0,0,0,.05) 60%),
+    linear-gradient(152deg,transparent 30%,rgba(255,255,255,.45) 36%,transparent 41%,transparent 46%,rgba(255,255,255,.3) 49%,transparent 53%),
+    radial-gradient(110% 60% at 50% 20%,rgba(255,255,255,.45),transparent 60%),
+    linear-gradient(170deg,var(--c1) 0%,var(--c2) 45%,var(--c3) 100%);
+  color:var(--ink);font-family:var(--card);flex:none;
 }
-.fut::after{ /* внутренняя рамка */
-  content:"";position:absolute;inset:.5em;pointer-events:none;
-  clip-path:inherit;border:.14em solid rgba(255,255,255,.5);
-}
-.fut .fo{position:absolute;left:8%;top:9%;width:23%;text-align:center;font-size:3.4em;font-weight:700;line-height:.9;z-index:2}
-.fut .fp{position:absolute;left:8%;top:21%;width:23%;text-align:center;font-size:1.35em;font-weight:600;letter-spacing:.04em;line-height:1;z-index:2}
-.fut .fph{position:absolute;right:3%;top:4%;width:70%;aspect-ratio:1;overflow:hidden}
-.fut .fph img{width:100%;height:100%;object-fit:cover;object-position:50% 15%;
-  -webkit-mask-image:linear-gradient(180deg,#000 74%,transparent 100%);mask-image:linear-gradient(180deg,#000 74%,transparent 100%)}
+/* тонкая штриховка в полосе бликов */
+.fut .fband{position:absolute;left:-10%;right:-10%;top:24%;height:20%;transform:skewY(-14deg);pointer-events:none;
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.22) 0 1px,transparent 1px 4px);
+  -webkit-mask:linear-gradient(90deg,transparent 30%,#000 60%,#000 85%,transparent);mask:linear-gradient(90deg,transparent 30%,#000 60%,#000 85%,transparent)}
+.fut .frim{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.fut .frim path{fill:none;stroke:var(--rim);stroke-width:1.6}
+.fut .fo{position:absolute;left:9%;top:10%;width:24%;text-align:center;font-size:2.75em;font-weight:700;line-height:.95;z-index:2;letter-spacing:-.02em}
+.fut .fp{position:absolute;left:9%;top:21.5%;width:24%;text-align:center;font-size:1.05em;font-weight:600;letter-spacing:.02em;line-height:1;z-index:2}
+.fut .fph{position:absolute;left:21%;top:5%;width:66%;height:51%;overflow:hidden}
+.fut .fph img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;
+  -webkit-mask-image:linear-gradient(180deg,#000 80%,transparent 100%);mask-image:linear-gradient(180deg,#000 80%,transparent 100%)}
 .fut .fph svg{width:100%;height:100%;display:block}
-.fut .fn{position:absolute;left:0;right:0;top:51.5%;text-align:center;font-size:1.95em;font-weight:700;
-  text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 9%;line-height:1.1}
-.fut .fs{position:absolute;left:7%;right:7%;top:61%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
-.fut .fs div{display:flex;flex-direction:column;align-items:center;line-height:1.05}
-.fut .fs span{font-size:.72em;font-weight:500;opacity:.85;letter-spacing:.02em}
-.fut .fs b{font-size:1.45em;font-weight:700}
-.fut .fb{position:absolute;left:20%;right:20%;top:74%;padding-top:2.5%;border-top:.1em solid var(--ink2);
-  display:flex;align-items:center;justify-content:center;gap:1.1em}
-.fut .ff{font-size:1.7em;line-height:1}
-.fut .fc{width:2.6em;height:2.6em;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-size:.82em;font-weight:700;letter-spacing:0;background:rgba(255,255,255,.35);border:.12em solid var(--ink2);color:var(--ink)}
-.fut .ft{position:absolute;left:0;right:0;bottom:5.5%;text-align:center;font-size:.72em;letter-spacing:.2em;
-  text-transform:uppercase;font-weight:600;color:var(--ink2)}
+.fut .fn{position:absolute;left:0;right:0;top:55.5%;text-align:center;font-size:1.32em;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8%;line-height:1.1;letter-spacing:-.01em}
+.fut .fs{position:absolute;left:8%;right:8%;top:63.5%;display:grid;grid-template-columns:repeat(6,1fr);text-align:center}
+.fut .fs div{display:flex;flex-direction:column;align-items:center;line-height:1.08}
+.fut .fs span{font-size:.62em;font-weight:600;color:var(--ink2);letter-spacing:.02em}
+.fut .fs b{font-size:1.12em;font-weight:700}
+.fut .fb{position:absolute;left:20%;right:20%;top:75%;display:flex;align-items:center;justify-content:center;gap:.7em}
+.fut .ff{font-size:1.15em;line-height:1}
+.fut .fc{min-width:1.9em;height:1.9em;padding:0 .3em;border-radius:1em;display:flex;align-items:center;justify-content:center;
+  font-size:.62em;font-weight:700;letter-spacing:.02em;background:rgba(255,255,255,.4);border:.1em solid var(--ink2);color:var(--ink)}
+.fut .ft{position:absolute;left:0;right:0;bottom:6.5%;text-align:center;font-size:.55em;letter-spacing:.2em;
+  text-transform:uppercase;font-weight:700;color:var(--ink2)}
 /* поле «прилетело» в карточку */
 .fut .pop{animation:pop .5s cubic-bezier(.2,1.6,.4,1)}
 @keyframes pop{0%{transform:scale(1.7);filter:brightness(1.6)}100%{transform:scale(1);filter:none}}
 
 /* редкость */
-.fut.t-silver{--c1:#F1F3F5;--c2:#BCC4CC;--c3:#7D8894;--ink:#1E252D;--ink2:rgba(30,37,45,.7)}
+.fut.t-silver{--c1:#F4F6F8;--c2:#C9D0D7;--c3:#8E99A4;--ink:#1E252D;--ink2:rgba(30,37,45,.6);--rim:rgba(255,255,255,.9)}
 .fut.t-gold{}
-.fut.t-rare{--c1:#FFF0A0;--c2:#F2C230;--c3:#B07A06}
-.fut.t-rare::before,.fut.t-top::before,.fut.t-icon::before{ /* блик */
-  content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.55) 45%,transparent 60%);
+.fut.t-rare{--c1:#FFF3B8;--c2:#F1CC4E;--c3:#C08A12}
+.fut.t-rare::before,.fut.t-top::before,.fut.t-icon::before{ /* бегущий блик */
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:3;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.5) 45%,transparent 60%);
   background-size:250% 100%;animation:shine 3.8s ease-in-out infinite;
 }
 @keyframes shine{0%{background-position:130% 0}60%,100%{background-position:-60% 0}}
-.fut.t-top{--c1:#2B2F3A;--c2:#15181F;--c3:#06070A;--ink:#F3CF5C;--ink2:rgba(243,207,92,.7);
+.fut.t-top{--c1:#34363E;--c2:#17191F;--c3:#07080A;--ink:#F2CF63;--ink2:rgba(242,207,99,.7);--rim:rgba(242,207,99,.8);
   background:
-    radial-gradient(90% 60% at 70% 20%, rgba(243,207,92,.28), transparent 60%),
-    repeating-linear-gradient(135deg,rgba(243,207,92,.06) 0 .5em,transparent .5em 1.4em),
-    linear-gradient(160deg,var(--c1),var(--c2) 55%,var(--c3))}
-.fut.t-top .fc{background:rgba(243,207,92,.12)}
-.fut.t-icon{--c1:#FFFDF4;--c2:#EDE2C0;--c3:#C7A75A;--ink:#4A3A12;--ink2:rgba(74,58,18,.7)}
+    linear-gradient(180deg,transparent 59.5%,rgba(242,207,99,.5) 59.5%,rgba(242,207,99,.5) 60%,rgba(255,255,255,.02) 60%),
+    linear-gradient(152deg,transparent 30%,rgba(242,207,99,.25) 36%,transparent 41%,transparent 46%,rgba(242,207,99,.18) 49%,transparent 53%),
+    radial-gradient(90% 55% at 50% 22%,rgba(242,207,99,.22),transparent 62%),
+    linear-gradient(170deg,var(--c1),var(--c2) 55%,var(--c3))}
+.fut.t-top .fband{background:repeating-linear-gradient(90deg,rgba(242,207,99,.18) 0 1px,transparent 1px 4px)}
+.fut.t-top .fc{background:rgba(242,207,99,.12)}
+.fut.t-icon{--c1:#FFFEF7;--c2:#F1E7C8;--c3:#CDB06A;--ink:#4A3A12;--ink2:rgba(74,58,18,.65)}
 
 /* мини-карточка */
 .fut.mini{--w:100px}
-.fut.mini .fs,.fut.mini .fb,.fut.mini .ft{display:none}
-.fut.mini .fn{top:57%;font-size:2.5em;padding:0 6%}
-.fut.mini .fo{font-size:3.9em}
-.fut.mini .fp{font-size:1.65em;top:22%}
-.fut.mini .fph{width:70%;right:2%}
+.fut.mini .fs,.fut.mini .fb,.fut.mini .ft,.fut.mini .fband{display:none}
+.fut.mini .fn{top:60%;font-size:1.75em;padding:0 5%;font-weight:700}
+.fut.mini .fo{font-size:3.3em;top:9%}
+.fut.mini .fp{font-size:1.35em;top:23%}
+.fut.mini .fph{height:55%}
 .fut.lock{background:linear-gradient(160deg,#1E2737,#121A2B);color:var(--grey-2)}
 .fut.lock::after{border-color:rgba(255,255,255,.08)}
 .fut.lock .q{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4em}
@@ -532,9 +538,9 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
   font-family:var(--disp);font-size:20px;color:rgba(255,255,255,.55)}
 .xs .fut{--w:min(15vw,88px);margin:0 auto}
 .xs .fut .fp{display:none}
-.xs .fut .fo{font-size:4.6em;left:4%;top:8%;width:30%}
-.xs .fut .fph{width:74%;right:1%;top:10%}
-.xs .fut .fn{font-size:3.4em;top:60%;padding:0 4%}
+.xs .fut .fo{font-size:4em;left:5%;top:8%;width:30%}
+.xs .fut .fph{left:18%;width:78%;top:8%;height:52%}
+.xs .fut .fn{font-size:2.6em;top:61%;padding:0 4%}
 .xs .xl{font-family:var(--disp);font-size:10px;letter-spacing:.08em;color:rgba(255,255,255,.75);margin-top:2px;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 .xsum{display:flex;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--edge);border-radius:12px;padding:12px 14px;margin:0 0 30px}
 .xsum b{font-family:var(--disp);font-size:28px;line-height:1}
@@ -1787,9 +1793,13 @@ function photoOf(id){ return PHOTOS[id] || PHOTO_BUILTIN[id] || null; }
 var SILHOUETTE = '<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="36" r="17" fill="currentColor" opacity=".22"/>'+
   '<path d="M12 100 C14 74 30 60 50 60 C70 60 86 74 88 100Z" fill="currentColor" opacity=".22"/></svg>';
 
+/* светлая кромка по контуру щита, та же форма, что у маски в karty.css */
+var CARD_RIM = '<svg class="frim" viewBox="0 0 200 278" preserveAspectRatio="none" aria-hidden="true">'+
+  '<path transform="translate(7 7.5) scale(.93 .945)" d="M34 5 Q100 0 166 5 C170 16 182 25 196 27 L196 228 C196 241 186 248 172 251 C146 256 116 261 100 274 C84 261 54 256 28 251 C14 248 4 241 4 228 L4 27 C18 25 30 16 34 5 Z"/></svg>';
 function cardHTML(c, mini, extra){
   var t = tierOf(c), gk = c.line === "gk";
-  var h = '<div class="fut t-'+t+(mini?' mini':'')+(extra?' '+extra:'')+'" data-id="'+c.id+'">';
+  var h = '<div class="fut t-'+t+(mini?' mini':'')+(extra?' '+extra:'')+'" data-id="'+c.id+'">'+
+          '<i class="fband"></i>'+CARD_RIM;
   var ph = photoOf(c.id);
   h += '<div class="fph">'+(ph ? '<img alt="" src="'+ph+'">' : SILHOUETTE)+'</div>';
   h += '<div class="fo">'+c.ovr+'</div><div class="fp">'+esc(POS_RU[c.pos] || c.pos)+'</div>';
