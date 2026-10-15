@@ -656,6 +656,11 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
   70%{opacity:1;transform:translate(-50%,-60%) scale(1)}100%{opacity:0;transform:translate(-50%,-80%) scale(.95)}}
 #fx{position:fixed;inset:0;z-index:105;pointer-events:none}
 
+/* очки на пак */
+.pdots{display:inline-flex;gap:4px;vertical-align:middle;margin:0 2px}
+.pdots i{width:10px;height:10px;border-radius:50%;background:var(--edge);display:inline-block}
+.pdots i.on{background:var(--gold);box-shadow:0 0 6px var(--gold)}
+
 </style>
 </head>
 <body>
@@ -1684,7 +1689,7 @@ var cloud = (CFG.tg && TG && TG.CloudStorage && typeof TG.CloudStorage.getItems 
 var storageName = cloud ? "облако Telegram" : "память этого устройства";
 
 function emptyCore(){
-  return {v:1, lv:0, owned:[], form:"4-3-3", xi:{}, plays:0, me:null, rs:0, snd:true,
+  return {v:1, lv:0, owned:[], form:"4-3-3", xi:{}, plays:0, me:null, rs:0, snd:true, pts:0, retry:-1,
           agg:{items:0, first:0, tasks:0, ok:0, hint:0, shown:0}, hard:{}};
 }
 var CORE = emptyCore(), SEEN = [], HIST = [];
@@ -1940,6 +1945,32 @@ function drawCard(level){
   return pool[pool.length-1];
 }
 
+/* ---------- цена пака ----------
+   Этапы 1–2 — карточка за каждый уровень, 3–5 — за два, 6–8 и дальше — за три.
+   Очки на пак дают и новые уровни, и переигранные: после 80-го уровня коллекцию
+   можно добирать, просто играя. Ничего не сгорает: очки копятся. */
+function packCost(){
+  var st = Math.floor(Math.min(CORE.lv, LV_TOTAL - 1) / LV_PER_STAGE);
+  return st < 2 ? 1 : (st < 5 ? 2 : 3);
+}
+function collectionFull(){ return CORE.owned.filter(function(id){ return id !== "me"; }).length >= CARDS.length; }
+/* очко на пак; вернёт выпавшую карточку или null */
+function addPackPoint(){
+  if(collectionFull()) return null;
+  CORE.pts = (CORE.pts || 0) + 1;
+  if(CORE.pts < packCost()) return null;
+  CORE.pts = 0;
+  var c = drawCard(Math.min(CORE.lv, LV_TOTAL - 1));
+  if(c) CORE.owned.push(c.id);
+  return c;
+}
+function packLeft(){ return Math.max(1, packCost() - (CORE.pts || 0)); }
+function packDots(){
+  var n = packCost(), h = '<span class="pdots">';
+  for(var i=0;i<n;i++) h += '<i class="'+(i < (CORE.pts||0) ? 'on' : '')+'"></i>';
+  return h + '</span>';
+}
+
 /* ---------- уровень: 7 примеров/вопросов + задача ---------- */
 function freshSeed(){ return ((Date.now() ^ Math.floor(Math.random()*0x7FFFFFFF)) >>> 0); }
 function avoidMap(){ var m = {}; SEEN.forEach(function(q){ m[q] = 1; }); return m; }
@@ -1981,16 +2012,20 @@ function renderHome(){
   h += '<main class="wrap">';
   h += '<div class="hero"><div class="hx"><div class="hk">'+(all ? 'Все уровни пройдены' : esc(STAGES[Math.floor(L/LV_PER_STAGE)].name))+'</div>'+
        '<div class="hn">'+(all ? '🏆' : 'Уровень '+(L+1)+'<small>8 заданий</small>')+'</div>'+
-       '<p>'+(all ? 'Можно переигрывать любой уровень.' : (got < CARDS.length ? 'За уровень — новая карточка в коллекцию.' : 'Коллекция собрана целиком!'))+'</p></div>'+
+       '<p>'+(collectionFull() ? 'Коллекция собрана целиком!' :
+             (packCost() === 1 ? 'За уровень — новая карточка.' :
+              'До пака: '+packDots()+' ещё '+packLeft()+' '+plural(packLeft(),'уровень','уровня','уровней')))+'</p></div>'+
        '<div class="packmini">'+(all ? '★' : '?')+'</div></div>';
   if(!all) h += '<div class="cta" style="padding-top:0"><button class="bigbtn" id="play">Играть уровень '+(L+1)+'</button></div>';
+  else if(!collectionFull()) h += '<div class="cta" style="padding-top:0"><button class="bigbtn" id="play">Играть дальше<small>копим на пак: любой уровень последнего этапа</small></button></div>';
   h += '<div class="tabs">'+
        '<button class="tab'+(tab==="levels"?' on':'')+'" data-t="levels">Уровни</button>'+
        '<button class="tab'+(tab==="coll"?' on':'')+'" data-t="coll">Коллекция</button>'+
        '<button class="tab'+(tab==="xi"?' on':'')+'" data-t="xi">Состав</button></div>';
   h += '<div id="pane"></div></main>';
   app.innerHTML = h;
-  var pb = document.getElementById("play"); if(pb) pb.onclick = function(){ tap(); startLevel(CORE.lv); };
+  var pb = document.getElementById("play");
+  if(pb) pb.onclick = function(){ tap(); startLevel(CORE.lv < LV_TOTAL ? CORE.lv : LV_TOTAL - 1 - Math.floor(Math.random() * LV_PER_STAGE)); };
   Array.prototype.forEach.call(document.querySelectorAll(".tab"), function(b){
     b.onclick = function(){ tap(); tab = b.getAttribute("data-t"); renderHome(); };
   });
@@ -2538,19 +2573,23 @@ function finishLevel(){
   CORE.agg[run.taskResult || "shown"]++;
   run.hard.forEach(function(t){ CORE.hard[t] = (CORE.hard[t]||0) + 1; });
   lv.items.forEach(function(it){ SEEN.push(it.q); }); SEEN.push(lv.task.q);
+  /* мягкая вторая попытка: если с первого раза верно меньше половины, новый уровень
+     предлагаем сыграть ещё раз — ничего не отнимаем. Вторая попытка засчитывается всегда. */
+  var good = run.first + (run.taskResult === "ok" ? 1 : 0), again = false;
   if(!lv.replay && lv.L === CORE.lv){
-    CORE.lv++; syncMe();
-    newCard = drawCard(lv.L);
-    if(newCard) CORE.owned.push(newCard.id);
-  }
+    if(good < 4 && CORE.retry !== lv.L){ CORE.retry = lv.L; again = true; }
+    else { CORE.retry = -1; CORE.lv++; syncMe(); newCard = addPackPoint(); }
+  } else newCard = addPackPoint();
   var d = new Date();
   HIST.push({d:d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(), L:lv.L+1, ft:run.first, n:lv.items.length,
-             tr:run.taskResult, c:newCard ? newCard.id : null});
+             tr:run.taskResult, c:newCard ? newCard.id : null, rt:again ? 1 : 0});
   saveState();
   if(CFG.tg){ guardClose(false); setBack(null); }
-  var L = lv.L;
+  var L = lv.L, wasReplay = lv.replay;
   run = null;
-  if(newCard) renderPack(newCard, L); else renderReplayDone(L);
+  if(again) renderTryAgain(L);
+  else if(newCard) renderPack(newCard, L);
+  else renderLevelDone(L, wasReplay);
 }
 function renderPack(c, L){
   var h = '<div class="sess"><div class="sessbody"><div class="reveal">'+
@@ -2582,15 +2621,31 @@ function showReveal(c, L){
   var nx = document.getElementById("next"); if(nx) nx.onclick = function(){ tap(); startLevel(CORE.lv); };
   document.getElementById("toxi").onclick = function(){ tap(); tab = n >= 11 ? "xi" : "coll"; renderHome(); };
 }
-function renderReplayDone(L){
+/* уровень сыгран, но пак ещё копится */
+function renderLevelDone(L, replay){
+  var full = collectionFull(), left = packLeft();
   var h = '<div class="sess"><div class="sessbody"><div class="reveal">'+
           '<div class="matchbadge"><span class="mn">'+(L+1)+'</span><span class="ml">уровень</span></div>'+
-          '<h2>Тренировка сыграна</h2><p class="sub">'+(L < CORE.lv && CORE.lv <= LV_TOTAL && CORE.owned.length < CARDS.length ?
-            'Новые карточки — за новые уровни.' : 'Отличная тренировка.')+'</p>'+
-          (CORE.lv < LV_TOTAL ? '<button class="contbtn" id="next">Уровень '+(CORE.lv+1)+'</button>' : '')+
+          '<h2>'+(replay ? 'Тренировка сыграна' : 'Уровень пройден!')+'</h2>'+
+          (full ? '<p class="sub">Вся коллекция уже собрана — отличная тренировка.</p>' :
+            '<p class="sub">До нового пака: '+packDots()+'</p><p class="sub">Ещё '+left+' '+plural(left,'уровень','уровня','уровней')+' — и пак твой!</p>')+
+          '<button class="contbtn" id="next">'+(CORE.lv < LV_TOTAL ? 'Уровень '+(CORE.lv+1) : 'Играть дальше')+'</button>'+
           '<button class="contbtn ghost" id="home">На главную</button></div></div></div>';
   app.innerHTML = h;
-  var nx = document.getElementById("next"); if(nx) nx.onclick = function(){ tap(); startLevel(CORE.lv); };
+  document.getElementById("next").onclick = function(){ tap();
+    startLevel(CORE.lv < LV_TOTAL ? CORE.lv : LV_TOTAL - 1 - Math.floor(Math.random() * LV_PER_STAGE)); };
+  document.getElementById("home").onclick = function(){ tap(); renderHome(); };
+}
+/* хитрый уровень: предложить ещё раз, без слов «плохо» и «ошибки» */
+function renderTryAgain(L){
+  var h = '<div class="sess"><div class="sessbody"><div class="reveal">'+
+          '<div class="matchbadge"><span class="mn">'+(L+1)+'</span><span class="ml">уровень</span></div>'+
+          '<h2>Хорошая тренировка!</h2>'+
+          '<p class="sub">Этот уровень хитрый. Сыграй его ещё раз — и пак твой!</p>'+
+          '<button class="contbtn" id="again">Сыграть ещё раз</button>'+
+          '<button class="contbtn ghost" id="home">На главную</button></div></div></div>';
+  app.innerHTML = h;
+  document.getElementById("again").onclick = function(){ tap(); startLevel(L); };
   document.getElementById("home").onclick = function(){ tap(); renderHome(); };
 }
 
@@ -2630,7 +2685,7 @@ function renderParent(){
     HIST.slice(-10).reverse().forEach(function(x){
       var c = x.c && CARD_BY[x.c];
       h += '<div class="prow"><span class="pd">'+esc(x.d)+'</span><span class="pt">Уровень '+x.L+' · '+x.ft+' из '+x.n+' с первой'+
-           (c ? '<i>карточка: '+esc(c.n)+'</i>' : '<i>тренировка</i>')+'</span>'+
+           (c ? '<i>карточка: '+esc(c.n)+'</i>' : (x.rt ? '<i>предложено сыграть ещё раз</i>' : '<i>без карточки</i>'))+'</span>'+
            '<span class="pill '+(x.tr||'shown')+'">'+({ok:"задача сама",hint:"с подсказкой",shown:"разобрали"})[x.tr||"shown"]+'</span></div>';
     });
   }
